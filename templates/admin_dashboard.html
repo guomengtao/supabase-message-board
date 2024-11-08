@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>管理员后台</title>
+    <style>
+        body {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .message {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .reply {
+            margin-left: 30px;
+            background-color: #f9f9f9;
+        }
+        .admin-reply {
+            background-color: #fff3cd;
+        }
+        .hidden {
+            opacity: 0.5;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 5px;
+        }
+        button {
+            margin: 5px;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .reply-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .hide-btn {
+            background-color: #ffc107;
+            color: black;
+        }
+        .delete-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        .reply-form {
+            display: none;
+            margin-top: 10px;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            float: right;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>管理员后台</h1>
+        <div>
+            <a href="/" class="btn">返回前台</a>
+            <a href="{{ url_for('admin_logout') }}" class="logout-btn">退出登录</a>
+        </div>
+    </div>
+
+    <h2>留言管理</h2>
+    {% for message in messages %}
+    <div class="message {% if message.is_hidden %}hidden{% endif %}">
+        <strong>{{ message.name }}</strong>
+        <p>{{ message.content }}</p>
+        <small>{{ message.created_at }}</small>
+        
+        <button class="reply-btn" onclick="toggleReplyForm('reply-form-{{ message.id }}')">回复</button>
+        <a href="{{ url_for('toggle_visibility', message_id=message.id) }}">
+            <button class="hide-btn">{% if message.is_hidden %}显示{% else %}隐藏{% endif %}</button>
+        </a>
+        <a href="{{ url_for('delete_message', message_id=message.id) }}" onclick="return confirm('确定要删除这条留言吗？')">
+            <button class="delete-btn">删除</button>
+        </a>
+
+        <form action="{{ url_for('admin_reply') }}" method="POST" class="reply-form" id="reply-form-{{ message.id }}">
+            <input type="hidden" name="parent_id" value="{{ message.id }}">
+            <div class="form-group">
+                <label>回复内容：</label>
+                <textarea name="content" rows="2" required></textarea>
+            </div>
+            <button type="submit" class="reply-btn">发送回复</button>
+        </form>
+
+        {% for reply in message.replies %}
+        <div class="message reply {% if reply.is_admin_reply %}admin-reply{% endif %} {% if reply.is_hidden %}hidden{% endif %}">
+            <strong>{{ reply.name }}</strong>
+            <p>{{ reply.content }}</p>
+            <small>{{ reply.created_at }}</small>
+            <a href="{{ url_for('toggle_visibility', message_id=reply.id) }}">
+                <button class="hide-btn">{% if reply.is_hidden %}显示{% else %}隐藏{% endif %}</button>
+            </a>
+            <a href="{{ url_for('delete_message', message_id=reply.id) }}" onclick="return confirm('确定要删除这条回复吗？')">
+                <button class="delete-btn">删除</button>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <script>
+        function toggleReplyForm(formId) {
+            const form = document.getElementById(formId);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html> 

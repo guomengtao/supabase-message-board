@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>留言板</title>
+    <style>
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .message {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .reply {
+            margin-left: 30px;
+            background-color: #f9f9f9;
+        }
+        .admin-reply {
+            background-color: #fff3cd;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .reply-form {
+            display: none;
+            margin-left: 30px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>留言板</h1>
+    
+    <form action="/post" method="POST">
+        <div class="form-group">
+            <label>名字：</label>
+            <input type="text" name="name" required>
+        </div>
+        <div class="form-group">
+            <label>留言内容：</label>
+            <textarea name="content" rows="4" required></textarea>
+        </div>
+        <button type="submit">发送留言</button>
+    </form>
+
+    <h2>留言列表</h2>
+    {% for message in messages %}
+    <div class="message">
+        <strong>{{ message.name }}</strong>
+        <p>{{ message.content }}</p>
+        <small>{{ message.created_at }}</small>
+        <button onclick="toggleReplyForm('reply-form-{{ message.id }}')">回复</button>
+        
+        <form action="/post" method="POST" class="reply-form" id="reply-form-{{ message.id }}">
+            <input type="hidden" name="parent_id" value="{{ message.id }}">
+            <div class="form-group">
+                <label>名字：</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>回复内容：</label>
+                <textarea name="content" rows="2" required></textarea>
+            </div>
+            <button type="submit">发送回复</button>
+        </form>
+
+        {% for reply in message.replies %}
+        <div class="message reply {% if reply.is_admin_reply %}admin-reply{% endif %}">
+            <strong>{{ reply.name }}</strong>
+            <p>{{ reply.content }}</p>
+            <small>{{ reply.created_at }}</small>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <script>
+        function toggleReplyForm(formId) {
+            const form = document.getElementById(formId);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html> 
